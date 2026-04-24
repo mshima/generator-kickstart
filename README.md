@@ -1,6 +1,6 @@
 # generator-kickstart
 
-A [Yeoman](https://yeoman.io) generator that bootstraps a project from a markdown file containing fenced EJS code blocks.
+A [Yeoman](https://yeoman.io) generator that bootstraps a project from a markdown file containing fenced [Liquid](https://liquidjs.com) code blocks.
 
 ## Usage
 
@@ -21,26 +21,26 @@ If `source` is omitted, the generator will prompt for it interactively.
 
 ## Template format
 
-The markdown file may contain any text. Only fenced code blocks tagged with `ejs` and a filename are processed:
+The markdown file may contain any text. Only fenced code blocks tagged with `liquid` and a filename are processed:
 
 ````markdown
 # My Project
 
 Some description here.
 
-```ejs package.json
+```liquid package.json
 {
   "name": "my-project",
   "version": "1.0.0"
 }
 ```
 
-```ejs src/index.ts
-export const greeting = '<%= name %>';
+```liquid src/index.ts
+export const greeting = '{{ name }}';
 ```
 ````
 
-Each block is rendered through [EJS](https://ejs.co) and written to the destination path.
+Each block is rendered through [LiquidJS](https://liquidjs.com) and written to the destination path. LiquidJS uses a sandboxed engine that cannot execute arbitrary host code, making it safe to run templates from untrusted sources.
 
 ## Templates
 

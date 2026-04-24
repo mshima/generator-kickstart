@@ -7,17 +7,17 @@ export interface CodeBlock {
 }
 
 /**
- * Parses a markdown string and extracts EJS code blocks with their associated
- * filenames. Code blocks must be fenced with triple backticks, use `ejs` as
+ * Parses a markdown string and extracts Liquid code blocks with their associated
+ * filenames. Code blocks must be fenced with triple backticks, use `liquid` as
  * the language identifier, and include the target filename on the same line:
  *
- * ```ejs path/to/file.ts
+ * ```liquid path/to/file.ts
  * template content
  * ```
  */
 export function parseMarkdownBlocks(markdown: string): CodeBlock[] {
   const blocks: CodeBlock[] = [];
-  const regex = /^```ejs[ \t]+(\S+)[ \t]*\n([\s\S]*?)^```[ \t]*$/gm;
+  const regex = /^```liquid[ \t]+(\S+)[ \t]*\n([\s\S]*?)^```[ \t]*$/gm;
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(markdown)) !== null) {

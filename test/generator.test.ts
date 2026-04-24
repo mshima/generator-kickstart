@@ -5,11 +5,11 @@ import KickstartGenerator from '../generators/app/index.ts';
 const MARKDOWN = [
   '# My Template',
   '',
-  '```ejs src/index.ts',
+  '```liquid src/index.ts',
   "export const hello = 'world';",
   '```',
   '',
-  '```ejs README.md',
+  '```liquid README.md',
   '# Project',
   '```',
 ].join('\n');
@@ -19,7 +19,7 @@ describe('KickstartGenerator', () => {
     vi.restoreAllMocks();
   });
 
-  it('writes files from EJS blocks when a URL is provided', async () => {
+  it('writes files from Liquid blocks when a URL is provided', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -85,7 +85,7 @@ describe('KickstartGenerator', () => {
     ).rejects.toThrow('Failed to fetch template: 404 Not Found');
   });
 
-  it('succeeds silently when the markdown has no EJS blocks', async () => {
+  it('succeeds silently when the markdown has no Liquid blocks', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({

@@ -14,11 +14,11 @@ const TEMPLATE_DIR = join(
 );
 
 describe('parseMarkdownBlocks', () => {
-  it('parses a single EJS code block with filename', () => {
+  it('parses a single Liquid code block with filename', () => {
     const markdown = [
       '# My Template',
       '',
-      '```ejs src/index.ts',
+      '```liquid src/index.ts',
       "const hello = 'world';",
       '```',
     ].join('\n');
@@ -30,13 +30,13 @@ describe('parseMarkdownBlocks', () => {
     expect(blocks[0].content).toBe("const hello = 'world';\n");
   });
 
-  it('parses multiple EJS code blocks', () => {
+  it('parses multiple Liquid code blocks', () => {
     const markdown = [
-      '```ejs src/a.ts',
+      '```liquid src/a.ts',
       'const a = 1;',
       '```',
       '',
-      '```ejs src/b.ts',
+      '```liquid src/b.ts',
       'const b = 2;',
       '```',
     ].join('\n');
@@ -50,24 +50,24 @@ describe('parseMarkdownBlocks', () => {
     expect(blocks[1].content).toBe('const b = 2;\n');
   });
 
-  it('ignores non-EJS code blocks', () => {
+  it('ignores non-Liquid code blocks', () => {
     const markdown = [
       '```typescript src/index.ts',
       "const hello = 'world';",
       '```',
       '',
-      '```ejs src/template.ejs',
-      '<%= name %>',
+      '```liquid src/template.liquid',
+      '{{ name }}',
       '```',
     ].join('\n');
 
     const blocks = parseMarkdownBlocks(markdown);
 
     expect(blocks).toHaveLength(1);
-    expect(blocks[0].filename).toBe('src/template.ejs');
+    expect(blocks[0].filename).toBe('src/template.liquid');
   });
 
-  it('returns empty array when no EJS blocks are found', () => {
+  it('returns empty array when no Liquid blocks are found', () => {
     const markdown = '# No code blocks here\n\nJust some text.\n';
 
     const blocks = parseMarkdownBlocks(markdown);
@@ -77,7 +77,7 @@ describe('parseMarkdownBlocks', () => {
 
   it('parses a code block with nested path', () => {
     const markdown = [
-      '```ejs deeply/nested/path/file.json',
+      '```liquid deeply/nested/path/file.json',
       '{ "key": "value" }',
       '```',
     ].join('\n');
@@ -88,16 +88,17 @@ describe('parseMarkdownBlocks', () => {
     expect(blocks[0].filename).toBe('deeply/nested/path/file.json');
   });
 
-  it('renders EJS expressions in code blocks', async () => {
-    const { default: ejs } = await import('ejs');
+  it('renders Liquid expressions in code blocks', async () => {
+    const { Liquid } = await import('liquidjs');
+    const engine = new Liquid();
     const markdown = [
-      '```ejs src/greeting.ts',
-      "const msg = '<%= greeting %>';",
+      '```liquid src/greeting.ts',
+      "const msg = '{{ greeting }}';",
       '```',
     ].join('\n');
 
     const blocks = parseMarkdownBlocks(markdown);
-    const rendered = ejs.render(blocks[0].content, { greeting: 'hello' });
+    const rendered = await engine.parseAndRender(blocks[0].content, { greeting: 'hello' });
 
     expect(rendered).toBe("const msg = 'hello';\n");
   });
@@ -161,12 +162,12 @@ describe('resolveMarkdown', () => {
 
   it('reads a local template file by name (without extension)', async () => {
     const content = await resolveMarkdown('example', TEMPLATE_DIR);
-    expect(content).toContain('```ejs');
+    expect(content).toContain('```liquid');
   });
 
   it('reads a local template file by name (with .md extension)', async () => {
     const content = await resolveMarkdown('example.md', TEMPLATE_DIR);
-    expect(content).toContain('```ejs');
+    expect(content).toContain('```liquid');
   });
 
   it('throws when the local template is not found', async () => {
