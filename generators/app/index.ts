@@ -1,35 +1,13 @@
 import Generator from 'yeoman-generator';
 import type { BaseOptions } from 'yeoman-generator';
 import ejs from 'ejs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parseMarkdownBlocks, resolveMarkdown, validateSource } from './utils.ts';
 
-export interface CodeBlock {
-  filename: string;
-  content: string;
-}
+export { type CodeBlock, parseMarkdownBlocks } from './utils.ts';
 
-/**
- * Parses a markdown string and extracts EJS code blocks with their associated
- * filenames. Code blocks must be fenced with triple backticks, use `ejs` as
- * the language identifier, and include the target filename on the same line:
- *
- * ```ejs path/to/file.ts
- * template content
- * ```
- */
-export function parseMarkdownBlocks(markdown: string): CodeBlock[] {
-  const blocks: CodeBlock[] = [];
-  const regex = /^```ejs[ \t]+(\S+)[ \t]*\n([\s\S]*?)^```[ \t]*$/gm;
-  let match: RegExpExecArray | null;
-
-  while ((match = regex.exec(markdown)) !== null) {
-    blocks.push({
-      filename: match[1],
-      content: match[2],
-    });
-  }
-
-  return blocks;
-}
+const TEMPLATES_DIR = join(dirname(fileURLToPath(import.meta.url)), 'templates');
 
 type KickstartOptions = BaseOptions & {
   url?: string;
@@ -41,11 +19,13 @@ export default class KickstartGenerator extends Generator<
 > {
   private templateUrl = '';
 
-  initializing(): void {
+  constructor(args: string[] = [], opts: KickstartOptions = {} as KickstartOptions) {
+    super(args, opts);
     this.argument('url', {
       type: String,
       required: false,
-      description: 'URL to a markdown file containing EJS code blocks',
+      description:
+        'Template source: a URL, "github:user/repo[/path]", or a built-in template name',
     });
   }
 
@@ -59,9 +39,8 @@ export default class KickstartGenerator extends Generator<
       {
         type: 'input',
         name: 'url',
-        message: 'Enter the URL to the markdown template file:',
-        validate: (input: string) =>
-          input.trim().length > 0 || 'URL is required',
+        message: 'Enter the template source (URL, "github:user/repo", or template name):',
+        validate: (input: string) => validateSource(input, TEMPLATES_DIR),
       },
     ]);
 
@@ -69,16 +48,9 @@ export default class KickstartGenerator extends Generator<
   }
 
   async writing(): Promise<void> {
-    this.log(`Fetching template from: ${this.templateUrl}`);
+    this.log(`Loading template from: ${this.templateUrl}`);
 
-    const response = await fetch(this.templateUrl);
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch template: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    const markdown = await response.text();
+    const markdown = await resolveMarkdown(this.templateUrl, TEMPLATES_DIR);
     const blocks = parseMarkdownBlocks(markdown);
 
     if (blocks.length === 0) {
@@ -94,3 +66,4 @@ export default class KickstartGenerator extends Generator<
     }
   }
 }
+

@@ -1,8 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   parseMarkdownBlocks,
+  githubToUrl,
+  resolveMarkdown,
   type CodeBlock,
-} from '../generators/app/index.ts';
+} from '../generators/app/utils.ts';
+
+const TEMPLATE_DIR = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../generators/app/templates',
+);
 
 describe('parseMarkdownBlocks', () => {
   it('parses a single EJS code block with filename', () => {
@@ -99,5 +108,87 @@ describe('CodeBlock type', () => {
     const block: CodeBlock = { filename: 'test.ts', content: 'const x = 1;\n' };
     expect(block.filename).toBe('test.ts');
     expect(block.content).toBe('const x = 1;\n');
+  });
+});
+
+describe('githubToUrl', () => {
+  it('converts github:user/repo to a raw README.md URL', () => {
+    expect(githubToUrl('github:mshima/generator-kickstart')).toBe(
+      'https://raw.githubusercontent.com/mshima/generator-kickstart/HEAD/README.md',
+    );
+  });
+
+  it('converts github:user/repo/path to a raw URL for that path', () => {
+    expect(githubToUrl('github:mshima/generator-kickstart/docs/guide.md')).toBe(
+      'https://raw.githubusercontent.com/mshima/generator-kickstart/HEAD/docs/guide.md',
+    );
+  });
+
+  it('throws on an invalid github shorthand (no repo)', () => {
+    expect(() => githubToUrl('github:user')).toThrow(
+      'Invalid github shorthand "github:user"',
+    );
+  });
+});
+
+describe('resolveMarkdown', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('fetches a plain https URL', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, text: async () => '# content' }),
+    );
+
+    const result = await resolveMarkdown('https://example.com/file.md', TEMPLATE_DIR);
+    expect(result).toBe('# content');
+    expect(fetch).toHaveBeenCalledWith('https://example.com/file.md');
+  });
+
+  it('expands github: shorthand and fetches the raw URL', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, text: async () => '# readme' }),
+    );
+
+    await resolveMarkdown('github:mshima/generator-kickstart', TEMPLATE_DIR);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://raw.githubusercontent.com/mshima/generator-kickstart/HEAD/README.md',
+    );
+  });
+
+  it('reads a local template file by name (without extension)', async () => {
+    const content = await resolveMarkdown('example', TEMPLATE_DIR);
+    expect(content).toContain('```ejs');
+  });
+
+  it('reads a local template file by name (with .md extension)', async () => {
+    const content = await resolveMarkdown('example.md', TEMPLATE_DIR);
+    expect(content).toContain('```ejs');
+  });
+
+  it('throws when the local template is not found', async () => {
+    await expect(
+      resolveMarkdown('nonexistent-template', TEMPLATE_DIR),
+    ).rejects.toThrow('Template "nonexistent-template" not found');
+  });
+
+  it('throws when fetch returns a non-ok response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, status: 404, statusText: 'Not Found' }),
+    );
+
+    await expect(
+      resolveMarkdown('https://example.com/missing.md', TEMPLATE_DIR),
+    ).rejects.toThrow('Failed to fetch template: 404 Not Found');
+  });
+
+  it('throws on unsupported URL protocol', async () => {
+    await expect(
+      resolveMarkdown('ftp://example.com/file.md', TEMPLATE_DIR),
+    ).rejects.toThrow('Unsupported protocol "ftp:"');
   });
 });

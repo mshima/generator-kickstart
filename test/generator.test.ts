@@ -19,7 +19,7 @@ describe('KickstartGenerator', () => {
     vi.restoreAllMocks();
   });
 
-  it('writes files from EJS blocks when url is provided', async () => {
+  it('writes files from EJS blocks when a URL is provided', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -36,6 +36,36 @@ describe('KickstartGenerator', () => {
     result.assertFileContent('src/index.ts', "export const hello = 'world';");
     result.assertFile('README.md');
     result.assertFileContent('README.md', '# Project');
+  });
+
+  it('writes files when a github: shorthand is provided', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => MARKDOWN,
+      }),
+    );
+
+    const result = await helpers
+      .run(KickstartGenerator)
+      .withArguments(['github:example/repo']);
+
+    expect(fetch).toHaveBeenCalledWith(
+      'https://raw.githubusercontent.com/example/repo/HEAD/README.md',
+    );
+    result.assertFile('src/index.ts');
+    result.assertFile('README.md');
+  });
+
+  it('writes files from the built-in example template', async () => {
+    const result = await helpers
+      .run(KickstartGenerator)
+      .withArguments(['example']);
+
+    result.assertFile('package.json');
+    result.assertFile('src/index.js');
+    result.assertFile('README.md');
   });
 
   it('throws when the fetch response is not ok', async () => {
