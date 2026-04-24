@@ -41,9 +41,7 @@ export default class KickstartGenerator extends Generator<
 > {
   private templateUrl = '';
 
-  constructor(args: string[], opts: KickstartOptions) {
-    super(args, opts);
-
+  initializing(): void {
     this.argument('url', {
       type: String,
       required: false,
