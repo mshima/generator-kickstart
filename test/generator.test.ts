@@ -30,7 +30,8 @@ describe('KickstartGenerator', () => {
 
     const result = await helpers
       .run(KickstartGenerator)
-      .withArguments(['https://example.com/template.md']);
+      .withArguments(['https://example.com/template.md'])
+      .withAnswers({ confirmed: true });
 
     result.assertFile('src/index.ts');
     result.assertFileContent('src/index.ts', "export const hello = 'world';");
@@ -49,7 +50,8 @@ describe('KickstartGenerator', () => {
 
     const result = await helpers
       .run(KickstartGenerator)
-      .withArguments(['github:example/repo']);
+      .withArguments(['github:example/repo'])
+      .withAnswers({ confirmed: true });
 
     expect(fetch).toHaveBeenCalledWith(
       'https://raw.githubusercontent.com/example/repo/HEAD/README.md',
@@ -81,8 +83,18 @@ describe('KickstartGenerator', () => {
     await expect(
       helpers
         .run(KickstartGenerator)
-        .withArguments(['https://example.com/missing.md']),
+        .withArguments(['https://example.com/missing.md'])
+        .withAnswers({ confirmed: true }),
     ).rejects.toThrow('Failed to fetch template: 404 Not Found');
+  });
+
+  it('throws when the user declines the fetch confirmation', async () => {
+    await expect(
+      helpers
+        .run(KickstartGenerator)
+        .withArguments(['https://example.com/template.md'])
+        .withAnswers({ confirmed: false }),
+    ).rejects.toThrow('Template fetch cancelled by user.');
   });
 
   it('succeeds silently when the markdown has no Liquid blocks', async () => {
@@ -96,7 +108,8 @@ describe('KickstartGenerator', () => {
 
     const result = await helpers
       .run(KickstartGenerator)
-      .withArguments(['https://example.com/empty.md']);
+      .withArguments(['https://example.com/empty.md'])
+      .withAnswers({ confirmed: true });
 
     expect(Object.keys(result.getSnapshot())).toHaveLength(0);
   });

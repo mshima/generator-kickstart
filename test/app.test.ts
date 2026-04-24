@@ -1,10 +1,12 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   parseMarkdownBlocks,
   githubToUrl,
-  resolveMarkdown,
+  isRemoteSource,
+  toFetchUrl,
+  resolveLocalTemplate,
   type CodeBlock,
 } from '../generators/app/utils.ts';
 
@@ -132,64 +134,58 @@ describe('githubToUrl', () => {
   });
 });
 
-describe('resolveMarkdown', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
+describe('isRemoteSource', () => {
+  it('returns true for https URLs', () => {
+    expect(isRemoteSource('https://example.com/file.md')).toBe(true);
   });
 
-  it('fetches a plain https URL', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: true, text: async () => '# content' }),
-    );
-
-    const result = await resolveMarkdown('https://example.com/file.md', TEMPLATE_DIR);
-    expect(result).toBe('# content');
-    expect(fetch).toHaveBeenCalledWith('https://example.com/file.md');
+  it('returns true for http URLs', () => {
+    expect(isRemoteSource('http://example.com/file.md')).toBe(true);
   });
 
-  it('expands github: shorthand and fetches the raw URL', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: true, text: async () => '# readme' }),
-    );
+  it('returns true for github: shorthand', () => {
+    expect(isRemoteSource('github:user/repo')).toBe(true);
+  });
 
-    await resolveMarkdown('github:mshima/generator-kickstart', TEMPLATE_DIR);
-    expect(fetch).toHaveBeenCalledWith(
+  it('returns false for a local template name', () => {
+    expect(isRemoteSource('example')).toBe(false);
+  });
+
+  it('returns false for a relative path', () => {
+    expect(isRemoteSource('some/path/file.md')).toBe(false);
+  });
+});
+
+describe('toFetchUrl', () => {
+  it('returns the URL as-is for https', () => {
+    expect(toFetchUrl('https://example.com/file.md')).toBe('https://example.com/file.md');
+  });
+
+  it('expands github: shorthand to a raw GitHub URL', () => {
+    expect(toFetchUrl('github:mshima/generator-kickstart')).toBe(
       'https://raw.githubusercontent.com/mshima/generator-kickstart/HEAD/README.md',
     );
   });
 
-  it('reads a local template file by name (without extension)', async () => {
-    const content = await resolveMarkdown('example', TEMPLATE_DIR);
+  it('throws on unsupported URL protocol', () => {
+    expect(() => toFetchUrl('ftp://example.com/file.md')).toThrow('Unsupported protocol "ftp:"');
+  });
+});
+
+describe('resolveLocalTemplate', () => {
+  it('reads a local template file by name (without extension)', () => {
+    const content = resolveLocalTemplate('example', TEMPLATE_DIR);
     expect(content).toContain('```liquid');
   });
 
-  it('reads a local template file by name (with .md extension)', async () => {
-    const content = await resolveMarkdown('example.md', TEMPLATE_DIR);
+  it('reads a local template file by name (with .md extension)', () => {
+    const content = resolveLocalTemplate('example.md', TEMPLATE_DIR);
     expect(content).toContain('```liquid');
   });
 
-  it('throws when the local template is not found', async () => {
-    await expect(
-      resolveMarkdown('nonexistent-template', TEMPLATE_DIR),
-    ).rejects.toThrow('Template "nonexistent-template" not found');
-  });
-
-  it('throws when fetch returns a non-ok response', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 404, statusText: 'Not Found' }),
+  it('throws when the local template is not found', () => {
+    expect(() => resolveLocalTemplate('nonexistent-template', TEMPLATE_DIR)).toThrow(
+      'Template "nonexistent-template" not found',
     );
-
-    await expect(
-      resolveMarkdown('https://example.com/missing.md', TEMPLATE_DIR),
-    ).rejects.toThrow('Failed to fetch template: 404 Not Found');
-  });
-
-  it('throws on unsupported URL protocol', async () => {
-    await expect(
-      resolveMarkdown('ftp://example.com/file.md', TEMPLATE_DIR),
-    ).rejects.toThrow('Unsupported protocol "ftp:"');
   });
 });

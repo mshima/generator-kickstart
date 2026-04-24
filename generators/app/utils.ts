@@ -1,6 +1,39 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 
+/**
+ * Returns true when the source requires a network fetch (https/http URL or github: shorthand).
+ * Returns false for local template names.
+ */
+export function isRemoteSource(source: string): boolean {
+  const trimmed = source.trim();
+  if (trimmed.startsWith('github:')) return true;
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Converts a remote source (github: shorthand or https/http URL) to the URL that
+ * should be fetched. Throws for unsupported protocols.
+ */
+export function toFetchUrl(source: string): string {
+  const trimmed = source.trim();
+  if (trimmed.startsWith('github:')) {
+    return githubToUrl(trimmed);
+  }
+  const url = new URL(trimmed);
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    throw new Error(
+      `Unsupported protocol "${url.protocol}". Use https:, http:, or "github:" shorthand.`,
+    );
+  }
+  return trimmed;
+}
+
 export interface CodeBlock {
   filename: string;
   content: string;
@@ -91,41 +124,14 @@ export function validateSource(input: string, templateDir: string): true | strin
 }
 
 /**
- * Resolves a template source to its markdown string content.
+ * Reads a local template file from `templateDir`.
  *
- * Accepts three forms:
- *  - `"github:user/repo[/path]"` — fetched via raw.githubusercontent.com, defaults to README.md
- *  - A valid https/http URL — fetched directly
- *  - A template name or path — read from templateDir (with or without .md extension)
+ * Accepts a template name with or without `.md` extension.
+ * Throws when no matching file is found or when the resolved path escapes
+ * `templateDir` (path-traversal protection).
  */
-export async function resolveMarkdown(source: string, templateDir: string): Promise<string> {
-  if (source.startsWith('github:')) {
-    return fetchUrl(githubToUrl(source));
-  }
-
-  let url: URL;
-  try {
-    url = new URL(source);
-  } catch {
-    // Not a URL — resolve as a local template file
-    return readTemplateFile(source, templateDir);
-  }
-
-  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
-    throw new Error(
-      `Unsupported protocol "${url.protocol}". Use https:, http:, or "github:" shorthand.`,
-    );
-  }
-
-  return fetchUrl(source);
-}
-
-async function fetchUrl(url: string): Promise<string> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch template: ${response.status} ${response.statusText}`);
-  }
-  return response.text();
+export function resolveLocalTemplate(source: string, templateDir: string): string {
+  return readTemplateFile(source, templateDir);
 }
 
 function readTemplateFile(name: string, templateDir: string): string {

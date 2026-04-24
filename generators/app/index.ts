@@ -3,7 +3,13 @@ import type { BaseOptions } from 'yeoman-generator';
 import { Liquid } from 'liquidjs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseMarkdownBlocks, resolveMarkdown, validateSource } from './utils.ts';
+import {
+  parseMarkdownBlocks,
+  isRemoteSource,
+  toFetchUrl,
+  resolveLocalTemplate,
+  validateSource,
+} from './utils.ts';
 
 export { type CodeBlock, parseMarkdownBlocks } from './utils.ts';
 
@@ -20,6 +26,7 @@ export default class KickstartGenerator extends Generator<
   KickstartOptions
 > {
   private templateUrl = '';
+  private remoteUrl = '';
 
   constructor(args: string[] = [], opts: KickstartOptions = {} as KickstartOptions) {
     super(args, opts);
@@ -34,25 +41,55 @@ export default class KickstartGenerator extends Generator<
   async prompting(): Promise<void> {
     if (this.options.url) {
       this.templateUrl = this.options.url;
-      return;
+    } else {
+      const answers = await this.prompt<{ url: string }>([
+        {
+          type: 'input',
+          name: 'url',
+          message: 'Enter the template source (URL, "github:user/repo", or template name):',
+          validate: (input: string) => validateSource(input, TEMPLATES_DIR),
+        },
+      ]);
+
+      this.templateUrl = answers.url;
     }
 
-    const answers = await this.prompt<{ url: string }>([
-      {
-        type: 'input',
-        name: 'url',
-        message: 'Enter the template source (URL, "github:user/repo", or template name):',
-        validate: (input: string) => validateSource(input, TEMPLATES_DIR),
-      },
-    ]);
+    if (isRemoteSource(this.templateUrl)) {
+      const fetchUrl = toFetchUrl(this.templateUrl);
+      const { confirmed } = await this.prompt<{ confirmed: boolean }>([
+        {
+          type: 'confirm',
+          name: 'confirmed',
+          message: `Fetch template from: ${fetchUrl}?`,
+          default: true,
+        },
+      ]);
 
-    this.templateUrl = answers.url;
+      if (!confirmed) {
+        throw new Error('Template fetch cancelled by user.');
+      }
+
+      this.remoteUrl = fetchUrl;
+    }
   }
 
   async writing(): Promise<void> {
-    this.log(`Loading template from: ${this.templateUrl}`);
+    let markdown: string;
 
-    const markdown = await resolveMarkdown(this.templateUrl, TEMPLATES_DIR);
+    if (this.remoteUrl) {
+      this.log(`Fetching template from: ${this.remoteUrl}`);
+      const response = await fetch(this.remoteUrl);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch template: ${response.status} ${response.statusText}`,
+        );
+      }
+      markdown = await response.text();
+    } else {
+      this.log(`Loading template from: ${this.templateUrl}`);
+      markdown = resolveLocalTemplate(this.templateUrl, TEMPLATES_DIR);
+    }
+
     const blocks = parseMarkdownBlocks(markdown);
 
     if (blocks.length === 0) {
@@ -60,8 +97,9 @@ export default class KickstartGenerator extends Generator<
       return;
     }
 
+    const packageJson = this.packageJson.createProxy();
     for (const block of blocks) {
-      const rendered = await liquid.parseAndRender(block.content, {});
+      const rendered = await liquid.parseAndRender(block.content, { packageJson });
       const destPath = this.destinationPath(block.filename);
       this.fs.write(destPath, rendered);
       this.log(`Writing: ${block.filename}`);

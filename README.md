@@ -17,7 +17,25 @@ npx yo kickstart [source]
 | `github:user/repo/path/to/file.md` | Fetches a specific file from a GitHub repo |
 | `example` | Built-in template bundled with the generator (see [Templates](#templates)) |
 
-If `source` is omitted, the generator will prompt for it interactively.
+If `source` is omitted, the generator will prompt for it interactively.  When the source is a remote
+URL or `github:` shorthand, the generator will ask for confirmation before making any network request.
+
+## Template data
+
+The following variables are available in every Liquid template block:
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `packageJson` | object proxy | Live proxy over the destination `package.json`. Useful for reading the project name, version, or existing dependencies. |
+
+Example:
+
+```liquid package.json
+{
+  "name": "{{ packageJson.name | default: 'my-project' }}",
+  "version": "{{ packageJson.version | default: '0.0.1' }}"
+}
+```
 
 ## Template format
 
@@ -40,7 +58,13 @@ export const greeting = '{{ name }}';
 ```
 ````
 
-Each block is rendered through [LiquidJS](https://liquidjs.com) and written to the destination path. LiquidJS uses a sandboxed engine that cannot execute arbitrary host code, making it safe to run templates from untrusted sources.
+Each block is rendered through [LiquidJS](https://liquidjs.com) and written to the destination path.
+
+> **Why Liquid instead of EJS?**  EJS is the default templating engine used by Yeoman's own scaffolding
+> helpers, but it executes arbitrary JavaScript (`<% ... %>` scriptlets), which makes it unsafe for
+> templates fetched from untrusted sources.  LiquidJS is sandboxed by design — it can only perform
+> data transformations via `{{ variable }}` and `{% tag %}` syntax and has no access to the Node.js
+> runtime.
 
 ## Templates
 
