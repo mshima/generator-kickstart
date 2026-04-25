@@ -6,7 +6,7 @@
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
-    "skipLibCheck": true
+    "types": ["node"]
   },
   "include": ["generators/**/*.ts", "test/**/*.ts", "*.ts"]
 }
