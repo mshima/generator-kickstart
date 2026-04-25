@@ -97,7 +97,7 @@ describe('KickstartGenerator', () => {
     ).rejects.toThrow('Template fetch cancelled by user.');
   });
 
-  it('succeeds silently when the markdown has no Liquid blocks', async () => {
+  it('throws when the markdown has no Liquid blocks', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -106,11 +106,11 @@ describe('KickstartGenerator', () => {
       }),
     );
 
-    const result = await helpers
-      .run(KickstartGenerator)
-      .withArguments(['https://example.com/empty.md'])
-      .withAnswers({ confirmed: true });
-
-    expect(Object.keys(result.getSnapshot())).toHaveLength(0);
+    await expect(
+      helpers
+        .run(KickstartGenerator)
+        .withArguments(['https://example.com/empty.md'])
+        .withAnswers({ confirmed: true }),
+    ).rejects.toThrow('No Liquid code blocks found in the markdown file.');
   });
 });
