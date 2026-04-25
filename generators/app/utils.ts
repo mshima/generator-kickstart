@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join, resolve, sep } from 'node:path';
+import { isAbsolute, join, resolve, sep } from 'node:path';
 
 /**
  * Returns true when the source requires a network fetch (https/http URL or github: shorthand).
@@ -34,6 +34,21 @@ export function toFetchUrl(source: string): string {
   return trimmed;
 }
 
+/**
+ * Throws when a block filename is unsafe to write inside the destination directory.
+ * Rejects absolute paths and paths that contain `..` traversal segments.
+ */
+export function sanitizeBlockFilename(filename: string): void {
+  if (isAbsolute(filename)) {
+    throw new Error(`Unsafe filename "${filename}": absolute paths are not allowed.`);
+  }
+  if (filename.split(/[/\\]/).some(s => s === '..')) {
+    throw new Error(
+      `Unsafe filename "${filename}": parent directory traversal is not allowed.`,
+    );
+  }
+}
+
 export interface CodeBlock {
   filename: string;
   content: string;
@@ -54,8 +69,10 @@ export function parseMarkdownBlocks(markdown: string): CodeBlock[] {
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(markdown)) !== null) {
+    const filename = match[1];
+    sanitizeBlockFilename(filename);
     blocks.push({
-      filename: match[1],
+      filename,
       content: match[2],
     });
   }
@@ -83,6 +100,11 @@ export function githubToUrl(source: string): string {
       `Invalid github shorthand "${source}". Expected "github:user/repo" or "github:user/repo/path/to/file.md".`,
     );
   }
+  if (rest.split('/').some(p => p === '..')) {
+    throw new Error(
+      `Unsafe github shorthand "${source}": parent directory traversal is not allowed.`,
+    );
+  }
   const filePath = pathParts.length > 0 ? pathParts.join('/') : 'README.md';
   return `https://raw.githubusercontent.com/${user}/${repo}/HEAD/${filePath}`;
 }
@@ -103,6 +125,9 @@ export function validateSource(input: string, templateDir: string): true | strin
   if (trimmed.startsWith('github:')) {
     const rest = trimmed.slice('github:'.length);
     const parts = rest.split('/').filter(Boolean);
+    if (parts.some(p => p === '..')) {
+      return 'Unsafe github shorthand: parent directory traversal is not allowed.';
+    }
     if (parts.length >= 2) return true;
     return 'Invalid github shorthand. Expected "github:user/repo" or "github:user/repo/path/to/file.md".';
   }

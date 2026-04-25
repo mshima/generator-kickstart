@@ -7,6 +7,8 @@ import {
   isRemoteSource,
   toFetchUrl,
   resolveLocalTemplate,
+  sanitizeBlockFilename,
+  validateSource,
   type CodeBlock,
 } from '../generators/app/utils.ts';
 
@@ -187,5 +189,62 @@ describe('resolveLocalTemplate', () => {
     expect(() => resolveLocalTemplate('nonexistent-template', TEMPLATE_DIR)).toThrow(
       'Template "nonexistent-template" not found',
     );
+  });
+});
+
+describe('sanitizeBlockFilename', () => {
+  it('accepts a simple relative filename', () => {
+    expect(() => sanitizeBlockFilename('src/index.ts')).not.toThrow();
+  });
+
+  it('accepts a nested relative path', () => {
+    expect(() => sanitizeBlockFilename('a/b/c/file.json')).not.toThrow();
+  });
+
+  it('throws on an absolute path', () => {
+    expect(() => sanitizeBlockFilename('/etc/passwd')).toThrow(
+      'absolute paths are not allowed',
+    );
+  });
+
+  it('throws on a path with a .. segment', () => {
+    expect(() => sanitizeBlockFilename('../outside.ts')).toThrow(
+      'parent directory traversal is not allowed',
+    );
+  });
+
+  it('throws on a deeply nested .. traversal', () => {
+    expect(() => sanitizeBlockFilename('src/../../secret')).toThrow(
+      'parent directory traversal is not allowed',
+    );
+  });
+});
+
+describe('parseMarkdownBlocks (sanitization)', () => {
+  it('throws when a block filename is an absolute path', () => {
+    const markdown = ['```liquid /etc/passwd', 'root:x:0:0', '```'].join('\n');
+    expect(() => parseMarkdownBlocks(markdown)).toThrow('absolute paths are not allowed');
+  });
+
+  it('throws when a block filename contains .. traversal', () => {
+    const markdown = ['```liquid ../../secret.ts', 'bad content', '```'].join('\n');
+    expect(() => parseMarkdownBlocks(markdown)).toThrow(
+      'parent directory traversal is not allowed',
+    );
+  });
+});
+
+describe('githubToUrl (sanitization)', () => {
+  it('throws when any path segment is ..', () => {
+    expect(() => githubToUrl('github:user/repo/../secret')).toThrow(
+      'parent directory traversal is not allowed',
+    );
+  });
+});
+
+describe('validateSource (sanitization)', () => {
+  it('returns an error message when a github: path contains ..', () => {
+    const result = validateSource('github:user/repo/../secret', '/tmp');
+    expect(result).toContain('parent directory traversal is not allowed');
   });
 });
