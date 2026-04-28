@@ -63,4 +63,4 @@ jobs:
       - run: npm install
       - run: npm test
       - name: Publish with provenance
-        run: npm publish --workspace=${{ join(fromJson(needs.release-please.outputs.paths_released), ' --workspace=') }} --provenance --access public
+        run: npm publish --provenance --access public
