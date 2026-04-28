@@ -13,8 +13,10 @@
   ],
   "scripts": {
     "coverage": "vitest run --coverage",
+    "fix": "npm run format && npm run lint",
     "format": "prettier --write .",
-    "lint": "eslint .",
+    "lint": "eslint . --fix",
+    "pretest": "prettier --check . && eslint .",
     "test": "vitest run"
   },
   "dependencies": {

@@ -102,7 +102,9 @@ describe('parseMarkdownBlocks', () => {
     ].join('\n');
 
     const blocks = parseMarkdownBlocks(markdown);
-    const rendered = await engine.parseAndRender(blocks[0].content, { greeting: 'hello' });
+    const rendered = await engine.parseAndRender(blocks[0].content, {
+      greeting: 'hello',
+    });
 
     expect(rendered).toBe("const msg = 'hello';\n");
   });
@@ -160,7 +162,9 @@ describe('isRemoteSource', () => {
 
 describe('toFetchUrl', () => {
   it('returns the URL as-is for https', () => {
-    expect(toFetchUrl('https://example.com/file.md')).toBe('https://example.com/file.md');
+    expect(toFetchUrl('https://example.com/file.md')).toBe(
+      'https://example.com/file.md',
+    );
   });
 
   it('expands github: shorthand to a raw GitHub URL', () => {
@@ -170,7 +174,9 @@ describe('toFetchUrl', () => {
   });
 
   it('throws on unsupported URL protocol', () => {
-    expect(() => toFetchUrl('ftp://example.com/file.md')).toThrow('Unsupported protocol "ftp:"');
+    expect(() => toFetchUrl('ftp://example.com/file.md')).toThrow(
+      'Unsupported protocol "ftp:"',
+    );
   });
 });
 
@@ -186,9 +192,9 @@ describe('resolveLocalTemplate', () => {
   });
 
   it('throws when the local template is not found', () => {
-    expect(() => resolveLocalTemplate('nonexistent-template', TEMPLATE_DIR)).toThrow(
-      'Template "nonexistent-template" not found',
-    );
+    expect(() =>
+      resolveLocalTemplate('nonexistent-template', TEMPLATE_DIR),
+    ).toThrow('Template "nonexistent-template" not found');
   });
 });
 
@@ -223,11 +229,15 @@ describe('sanitizeBlockFilename', () => {
 describe('parseMarkdownBlocks (sanitization)', () => {
   it('throws when a block filename is an absolute path', () => {
     const markdown = ['```liquid /etc/passwd', 'root:x:0:0', '```'].join('\n');
-    expect(() => parseMarkdownBlocks(markdown)).toThrow('absolute paths are not allowed');
+    expect(() => parseMarkdownBlocks(markdown)).toThrow(
+      'absolute paths are not allowed',
+    );
   });
 
   it('throws when a block filename contains .. traversal', () => {
-    const markdown = ['```liquid ../../secret.ts', 'bad content', '```'].join('\n');
+    const markdown = ['```liquid ../../secret.ts', 'bad content', '```'].join(
+      '\n',
+    );
     expect(() => parseMarkdownBlocks(markdown)).toThrow(
       'parent directory traversal is not allowed',
     );

@@ -75,7 +75,7 @@ describe('KickstartGenerator', () => {
   it('includes prettify-pr job in release-me template when prettier exists in devDependencies', async () => {
     const result = await helpers
       .run(KickstartGenerator)
-      .inTmpDir(dir => {
+      .inTmpDir((dir) => {
         writeFileSync(
           join(dir, 'package.json'),
           JSON.stringify({ devDependencies: { prettier: '^3.0.0' } }, null, 2),
@@ -94,7 +94,7 @@ describe('KickstartGenerator', () => {
   it('omits prettify-pr job in release-me template when prettier is missing', async () => {
     const result = await helpers
       .run(KickstartGenerator)
-      .inTmpDir(dir => {
+      .inTmpDir((dir) => {
         writeFileSync(
           join(dir, 'package.json'),
           JSON.stringify({ devDependencies: {} }, null, 2),
@@ -157,7 +157,7 @@ describe('KickstartGenerator', () => {
   it('includes release-please config when workspaces exists', async () => {
     const result = await helpers
       .run(KickstartGenerator)
-      .inTmpDir(dir => {
+      .inTmpDir((dir) => {
         writeFileSync(
           join(dir, 'package.json'),
           JSON.stringify(
@@ -184,7 +184,7 @@ describe('KickstartGenerator', () => {
   it('includes workspace-aware publish command when workspaces exists', async () => {
     const result = await helpers
       .run(KickstartGenerator)
-      .inTmpDir(dir => {
+      .inTmpDir((dir) => {
         writeFileSync(
           join(dir, 'package.json'),
           JSON.stringify(
@@ -204,13 +204,15 @@ describe('KickstartGenerator', () => {
       join(result.cwd, '.github/workflows/release-please.yml'),
       'utf8',
     );
-    expect(workflow).toContain("--workspace=${{ join(fromJson(needs.release-please.outputs.paths_released)");
+    expect(workflow).toContain(
+      '--workspace=${{ join(fromJson(needs.release-please.outputs.paths_released)',
+    );
   });
 
   it('omits release-please config and uses simple publish when workspaces is missing', async () => {
     const result = await helpers
       .run(KickstartGenerator)
-      .inTmpDir(dir => {
+      .inTmpDir((dir) => {
         writeFileSync(
           join(dir, 'package.json'),
           JSON.stringify(

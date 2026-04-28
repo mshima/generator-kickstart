@@ -13,9 +13,17 @@ import {
 
 export { type CodeBlock, parseMarkdownBlocks } from './utils.ts';
 
-const TEMPLATES_DIR = join(dirname(fileURLToPath(import.meta.url)), 'templates');
+const TEMPLATES_DIR = join(
+  dirname(fileURLToPath(import.meta.url)),
+  'templates',
+);
 
-const liquid = new Liquid({ strictVariables: false, strictFilters: false, outputDelimiterLeft: '{{{', outputDelimiterRight: '}}}' });
+const liquid = new Liquid({
+  strictVariables: false,
+  strictFilters: false,
+  outputDelimiterLeft: '{{{',
+  outputDelimiterRight: '}}}',
+});
 
 type KickstartOptions = BaseOptions & {
   url?: string;
@@ -33,7 +41,10 @@ export default class KickstartGenerator extends Generator<
     opts: KickstartOptions = {} as KickstartOptions,
     features: BaseFeatures = {} as BaseFeatures,
   ) {
-    super(args, opts, features);
+    super(args, opts, {
+      ...features,
+      customInstallTask: 'ask',
+    } as BaseFeatures);
     this.argument('url', {
       type: String,
       required: false,
@@ -50,7 +61,8 @@ export default class KickstartGenerator extends Generator<
         {
           type: 'input',
           name: 'url',
-          message: 'Enter the template source (URL, "github:user/repo", or template name):',
+          message:
+            'Enter the template source (URL, "github:user/repo", or template name):',
           validate: (input: string) => validateSource(input, TEMPLATES_DIR),
         },
       ]);
@@ -102,7 +114,9 @@ export default class KickstartGenerator extends Generator<
 
     const packageJson = this.packageJson.createProxy();
     for (const block of blocks) {
-      const rendered = await liquid.parseAndRender(block.content, { packageJson });
+      const rendered = await liquid.parseAndRender(block.content, {
+        packageJson,
+      });
       this.writeDestination(block.filename, rendered);
       this.log(`Writing: ${block.filename}`);
     }

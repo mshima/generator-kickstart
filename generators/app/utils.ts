@@ -40,9 +40,11 @@ export function toFetchUrl(source: string): string {
  */
 export function sanitizeBlockFilename(filename: string): void {
   if (isAbsolute(filename)) {
-    throw new Error(`Unsafe filename "${filename}": absolute paths are not allowed.`);
+    throw new Error(
+      `Unsafe filename "${filename}": absolute paths are not allowed.`,
+    );
   }
-  if (filename.split(/[/\\]/).some(s => s === '..')) {
+  if (filename.split(/[/\\]/).some((s) => s === '..')) {
     throw new Error(
       `Unsafe filename "${filename}": parent directory traversal is not allowed.`,
     );
@@ -100,7 +102,7 @@ export function githubToUrl(source: string): string {
       `Invalid github shorthand "${source}". Expected "github:user/repo" or "github:user/repo/path/to/file.md".`,
     );
   }
-  if (rest.split('/').some(p => p === '..')) {
+  if (rest.split('/').some((p) => p === '..')) {
     throw new Error(
       `Unsafe github shorthand "${source}": parent directory traversal is not allowed.`,
     );
@@ -118,14 +120,17 @@ export function githubToUrl(source: string): string {
  *  - A "github:user/repo[/path]" shorthand
  *  - A template name (file that exists inside templateDir, with or without .md extension)
  */
-export function validateSource(input: string, templateDir: string): true | string {
+export function validateSource(
+  input: string,
+  templateDir: string,
+): true | string {
   const trimmed = input.trim();
   if (!trimmed) return 'Template source is required.';
 
   if (trimmed.startsWith('github:')) {
     const rest = trimmed.slice('github:'.length);
     const parts = rest.split('/').filter(Boolean);
-    if (parts.some(p => p === '..')) {
+    if (parts.some((p) => p === '..')) {
       return 'Unsafe github shorthand: parent directory traversal is not allowed.';
     }
     if (parts.length >= 2) return true;
@@ -155,7 +160,10 @@ export function validateSource(input: string, templateDir: string): true | strin
  * Throws when no matching file is found or when the resolved path escapes
  * `templateDir` (path-traversal protection).
  */
-export function resolveLocalTemplate(source: string, templateDir: string): string {
+export function resolveLocalTemplate(
+  source: string,
+  templateDir: string,
+): string {
   return readTemplateFile(source, templateDir);
 }
 
