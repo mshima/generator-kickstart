@@ -27,14 +27,13 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
-{% if packageJson.workspaces %}
-        with:
+{% if packageJson.workspaces
+%}        with:
           config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
-{% endif %}
-
-{% if packageJson.devDependencies and packageJson.devDependencies.prettier %}
-  prettify-pr:
+          manifest-file: .release-please-manifest.json{% endif
+%}
+{% if packageJson.devDependencies and packageJson.devDependencies.prettier
+%}  prettify-pr:
     runs-on: ubuntu-latest
     needs: release-please
     if: ${{ needs.release-please.outputs.prs_created == 'true' }}
@@ -58,8 +57,8 @@ jobs:
           git commit -m "chore: fix code style issues"
           git push origin
 
-{% endif %}
-  publish:
+{% endif
+%}  publish:
     runs-on: ubuntu-latest
     needs: release-please
     if: ${{ needs.release-please.outputs.releases_created == 'true' }}
@@ -75,10 +74,24 @@ jobs:
       - run: npm install
       - run: npm test
       - name: Publish with provenance
-{% if packageJson.workspaces %}
-        run: npm publish --workspace=${{ join(fromJson(needs.release-please.outputs.paths_released), ' --workspace=') }} --provenance --access public
-{% else %}
-        run: npm publish --provenance --access public
-{% endif %}
+{% if packageJson.workspaces
+%}        run: npm publish --workspace=${{ join(fromJson(needs.release-please.outputs.paths_released), ' --workspace=') }} --provenance --access public
+{% else
+%}        run: npm publish --provenance --access public{% endif %}
+```
 
+```liquid .release-please-manifest.json
+{
+  ".": "{{{ packageJson.version }}}"
+}
+```
+
+```liquid release-please-config.json
+{
+  "packages": {
+    ".": {
+      "release-type": "node"
+    }
+  }
+}
 ```

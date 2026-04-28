@@ -72,9 +72,10 @@ Each block is rendered through [LiquidJS](https://liquidjs.com) and written to t
 
 Built-in templates live in `generators/app/templates/`. Pass the filename (with or without `.md`) as the `source` argument:
 
-| Name      | Description                                                          |
-| --------- | -------------------------------------------------------------------- |
-| `example` | Minimal project with `package.json`, `src/index.js`, and `README.md` |
+| Name                    | Description                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| `example`               | Minimal project with `package.json`, `src/index.js`, and `README.md`          |
+| `release-please-action` | Release Please workflow template with optional workspace and prettier support |
 
 ## Examples
 
@@ -90,6 +91,9 @@ yo kickstart github:mshima/generator-kickstart/generators/app/templates/example.
 
 # Using a built-in template
 yo kickstart example
+
+# Using the release workflow template
+yo kickstart release-please-action
 ```
 
 ## Development
