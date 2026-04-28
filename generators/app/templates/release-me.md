@@ -50,7 +50,7 @@ jobs:
           node-version: 'lts/*'
       - run: npm install
       - run: npx prettier --write .
-      - name: Fix lint on Release PR
+      - name: Fix prettier on Release PR
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
