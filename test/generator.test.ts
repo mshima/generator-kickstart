@@ -72,7 +72,7 @@ describe('KickstartGenerator', () => {
     result.assertFile('README.md');
   });
 
-  it('includes prettify-pr job in release-me template when prettier exists in devDependencies', async () => {
+  it('includes prettify-pr job in release-please-action template when prettier exists in devDependencies', async () => {
     const result = await helpers
       .run(KickstartGenerator)
       .inTmpDir((dir) => {
@@ -81,7 +81,7 @@ describe('KickstartGenerator', () => {
           JSON.stringify({ devDependencies: { prettier: '^3.0.0' } }, null, 2),
         );
       })
-      .withArguments(['release-me']);
+      .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
     const workflow = readFileSync(
@@ -91,7 +91,7 @@ describe('KickstartGenerator', () => {
     expect(workflow).toContain('prettify-pr:');
   });
 
-  it('omits prettify-pr job in release-me template when prettier is missing', async () => {
+  it('omits prettify-pr job in release-please-action template when prettier is missing', async () => {
     const result = await helpers
       .run(KickstartGenerator)
       .inTmpDir((dir) => {
@@ -100,7 +100,7 @@ describe('KickstartGenerator', () => {
           JSON.stringify({ devDependencies: {} }, null, 2),
         );
       })
-      .withArguments(['release-me']);
+      .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
     const workflow = readFileSync(
@@ -170,7 +170,7 @@ describe('KickstartGenerator', () => {
           ),
         );
       })
-      .withArguments(['release-me']);
+      .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
     const workflow = readFileSync(
@@ -197,7 +197,7 @@ describe('KickstartGenerator', () => {
           ),
         );
       })
-      .withArguments(['release-me']);
+      .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
     const workflow = readFileSync(
@@ -224,7 +224,7 @@ describe('KickstartGenerator', () => {
           ),
         );
       })
-      .withArguments(['release-me']);
+      .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
     const workflow = readFileSync(
