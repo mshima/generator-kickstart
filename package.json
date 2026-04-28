@@ -1,0 +1,43 @@
+{
+  "name": "generator-kickstart",
+  "version": "0.0.1",
+  "description": "A Yeoman generator to kickstart projects from markdown templates",
+  "keywords": [
+    "yeoman-generator"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": "./generators/app/index.ts",
+  "files": [
+    "generators"
+  ],
+  "scripts": {
+    "coverage": "vitest run --coverage",
+    "fix": "npm run format && npm run lint",
+    "format": "prettier --write .",
+    "lint": "eslint . --fix",
+    "pretest": "prettier --check . && eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "liquidjs": "^10.25.7",
+    "yeoman-generator": "^8.1.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "@yeoman/adapter": "^4.0.2",
+    "jiti": "^2.6.1",
+    "prettier": "^3.8.3",
+    "prettier-plugin-packagejson": "^3.0.2",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.0",
+    "vitest": "^4.1.5",
+    "yeoman-environment": "^6.0.1",
+    "yeoman-test": "^11.3.1"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  }
+}
