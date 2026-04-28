@@ -57,8 +57,8 @@ jobs:
           git add .
           git commit -m "chore: fix code style issues"
           git push origin
-{% endif %}
 
+{% endif %}
   publish:
     runs-on: ubuntu-latest
     needs: release-please
