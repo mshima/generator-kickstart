@@ -15,7 +15,7 @@ export { type CodeBlock, parseMarkdownBlocks } from './utils.ts';
 
 const TEMPLATES_DIR = join(dirname(fileURLToPath(import.meta.url)), 'templates');
 
-const liquid = new Liquid({ strictVariables: false, strictFilters: false });
+const liquid = new Liquid({ strictVariables: false, strictFilters: false, outputDelimiterLeft: '{{{', outputDelimiterRight: '}}}' });
 
 type KickstartOptions = BaseOptions & {
   url?: string;

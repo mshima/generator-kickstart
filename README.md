@@ -39,7 +39,9 @@ Example:
 
 ## Template format
 
-The markdown file may contain any text. Only fenced code blocks tagged with `liquid` and a filename are processed:
+The markdown file may contain any text. Only fenced code blocks tagged with `liquid` and a filename are processed.
+
+> **Note on Liquid delimiters:** The generator uses custom delimiters for Liquid output: `{{{` and `}}}` instead of the standard `{{` and `}}`. This allows expressions (which use `{{ ... }}`) to pass through unchanged in generated workflow files without requiring `{% raw %}` blocks.
 
 ````markdown
 # My Project
