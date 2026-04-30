@@ -1,7 +1,7 @@
 {
-  "name": "generator-kickstart",
+  "name": "generator-parse",
   "version": "0.0.0",
-  "description": "A Yeoman generator to kickstart projects from markdown templates",
+  "description": "A Yeoman generator to generate files from markdown templates",
   "keywords": [
     "yeoman-generator"
   ],

@@ -1,4 +1,4 @@
-# generator-kickstart
+# generator-parse
 
 A [Yeoman](https://yeoman.io) generator that bootstraps a project from a markdown file containing fenced [Liquid](https://liquidjs.com) code blocks.
 
@@ -81,13 +81,13 @@ Built-in templates live in `generators/app/templates/`. Pass the filename (with 
 
 ```sh
 # From a public URL
-yo kickstart https://raw.githubusercontent.com/mshima/generator-kickstart/main/generators/app/templates/example.md
+yo kickstart https://raw.githubusercontent.com/mshima/generator-parse/main/generators/app/templates/example.md
 
 # From a GitHub repo (README.md)
-yo kickstart github:mshima/generator-kickstart
+yo kickstart github:mshima/generator-parse
 
 # From a specific file in a GitHub repo
-yo kickstart github:mshima/generator-kickstart/generators/app/templates/example.md
+yo kickstart github:mshima/generator-parse/generators/app/templates/example.md
 
 # Using a built-in template
 yo kickstart example

@@ -88,11 +88,11 @@ export function parseMarkdownBlocks(markdown: string): CodeBlock[] {
  * no path is provided.
  *
  * @example
- * githubToUrl('github:mshima/generator-kickstart')
- * // → 'https://raw.githubusercontent.com/mshima/generator-kickstart/HEAD/README.md'
+ * githubToUrl('github:mshima/generator-parse')
+ * // → 'https://raw.githubusercontent.com/mshima/generator-parse/HEAD/README.md'
  *
- * githubToUrl('github:mshima/generator-kickstart/docs/guide.md')
- * // → 'https://raw.githubusercontent.com/mshima/generator-kickstart/HEAD/docs/guide.md'
+ * githubToUrl('github:mshima/generator-parse/docs/guide.md')
+ * // → 'https://raw.githubusercontent.com/mshima/generator-parse/HEAD/docs/guide.md'
  */
 export function githubToUrl(source: string): string {
   const rest = source.slice('github:'.length);

@@ -1,6 +1,6 @@
 # Example Template
 
-A minimal built-in template for trying out generator-kickstart.
+A minimal built-in template for trying out generator-parse.
 
 ```liquid package.json
 {
@@ -14,7 +14,7 @@ A minimal built-in template for trying out generator-kickstart.
 ```
 
 ```liquid src/index.js
-console.log('Hello from generator-kickstart!');
+console.log('Hello from generator-parse!');
 ```
 
 ```liquid README.md

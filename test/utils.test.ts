@@ -120,14 +120,14 @@ describe('CodeBlock type', () => {
 
 describe('githubToUrl', () => {
   it('converts github:user/repo to a raw README.md URL', () => {
-    expect(githubToUrl('github:mshima/generator-kickstart')).toBe(
-      'https://raw.githubusercontent.com/mshima/generator-kickstart/HEAD/README.md',
+    expect(githubToUrl('github:mshima/generator-parse')).toBe(
+      'https://raw.githubusercontent.com/mshima/generator-parse/HEAD/README.md',
     );
   });
 
   it('converts github:user/repo/path to a raw URL for that path', () => {
-    expect(githubToUrl('github:mshima/generator-kickstart/docs/guide.md')).toBe(
-      'https://raw.githubusercontent.com/mshima/generator-kickstart/HEAD/docs/guide.md',
+    expect(githubToUrl('github:mshima/generator-parse/docs/guide.md')).toBe(
+      'https://raw.githubusercontent.com/mshima/generator-parse/HEAD/docs/guide.md',
     );
   });
 
@@ -168,8 +168,8 @@ describe('toFetchUrl', () => {
   });
 
   it('expands github: shorthand to a raw GitHub URL', () => {
-    expect(toFetchUrl('github:mshima/generator-kickstart')).toBe(
-      'https://raw.githubusercontent.com/mshima/generator-kickstart/HEAD/README.md',
+    expect(toFetchUrl('github:mshima/generator-parse')).toBe(
+      'https://raw.githubusercontent.com/mshima/generator-parse/HEAD/README.md',
     );
   });
 
