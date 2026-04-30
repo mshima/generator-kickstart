@@ -67,15 +67,16 @@ export interface CodeBlock {
  */
 export function parseMarkdownBlocks(markdown: string): CodeBlock[] {
   const blocks: CodeBlock[] = [];
-  const regex = /^```liquid[ \t]+(\S+)[ \t]*\n([\s\S]*?)^```[ \t]*$/gm;
+  const regex =
+    /^```(\S+ )?liquid[ \t]+(?<filename>\S+)[ \t]*\n(?<content>[\s\S]*?)^```[ \t]*$/gm;
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(markdown)) !== null) {
-    const filename = match[1];
+    const { filename, content } = match.groups ?? {};
     sanitizeBlockFilename(filename);
     blocks.push({
       filename,
-      content: match[2],
+      content,
     });
   }
 
