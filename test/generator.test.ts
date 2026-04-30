@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import helpers from 'yeoman-test';
-import { writeFileSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { result, createHelpers } from 'yeoman-test';
 import KickstartGenerator from '../generators/app/index.ts';
+
+const helpers = createHelpers({
+  environmentOptions: { dryRun: true },
+});
 
 const MARKDOWN = [
   '# My Template',
@@ -30,7 +32,7 @@ describe('KickstartGenerator', () => {
       }),
     );
 
-    const result = await helpers
+    await helpers
       .run(KickstartGenerator)
       .withArguments(['https://example.com/template.md'])
       .withAnswers({ confirmed: true });
@@ -50,7 +52,7 @@ describe('KickstartGenerator', () => {
       }),
     );
 
-    const result = await helpers
+    await helpers
       .run(KickstartGenerator)
       .withArguments(['github:example/repo'])
       .withAnswers({ confirmed: true });
@@ -63,9 +65,7 @@ describe('KickstartGenerator', () => {
   });
 
   it('writes files from the built-in example template', async () => {
-    const result = await helpers
-      .run(KickstartGenerator)
-      .withArguments(['example']);
+    await helpers.run(KickstartGenerator).withArguments(['example']);
 
     result.assertFile('package.json');
     result.assertFile('src/index.js');
@@ -73,41 +73,37 @@ describe('KickstartGenerator', () => {
   });
 
   it('includes prettify-pr job in release-please-action template when prettier exists in devDependencies', async () => {
-    const result = await helpers
+    await helpers
       .run(KickstartGenerator)
-      .inTmpDir((dir) => {
-        writeFileSync(
-          join(dir, 'package.json'),
-          JSON.stringify({ devDependencies: { prettier: '^3.0.0' } }, null, 2),
-        );
+      .withFiles({
+        'package.json': JSON.stringify(
+          { devDependencies: { prettier: '^3.0.0' } },
+          null,
+          2,
+        ),
       })
       .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
-    const workflow = readFileSync(
-      join(result.cwd, '.github/workflows/release-please.yml'),
-      'utf8',
+    result.assertFileContent(
+      '.github/workflows/release-please.yml',
+      'prettify-pr:',
     );
-    expect(workflow).toContain('prettify-pr:');
   });
 
   it('omits prettify-pr job in release-please-action template when prettier is missing', async () => {
-    const result = await helpers
+    await helpers
       .run(KickstartGenerator)
-      .inTmpDir((dir) => {
-        writeFileSync(
-          join(dir, 'package.json'),
-          JSON.stringify({ devDependencies: {} }, null, 2),
-        );
+      .withFiles({
+        'package.json': JSON.stringify({ devDependencies: {} }, null, 2),
       })
       .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
-    const workflow = readFileSync(
-      join(result.cwd, '.github/workflows/release-please.yml'),
-      'utf8',
+    result.assertNoFileContent(
+      '.github/workflows/release-please.yml',
+      'prettify-pr:',
     );
-    expect(workflow).not.toContain('prettify-pr:');
   });
 
   it('throws when the fetch response is not ok', async () => {
@@ -155,85 +151,81 @@ describe('KickstartGenerator', () => {
   });
 
   it('includes release-please config when workspaces exists', async () => {
-    const result = await helpers
+    await helpers
       .run(KickstartGenerator)
-      .inTmpDir((dir) => {
-        writeFileSync(
-          join(dir, 'package.json'),
-          JSON.stringify(
-            {
-              workspaces: ['packages/*'],
-              devDependencies: { prettier: '^3.0.0' },
-            },
-            null,
-            2,
-          ),
-        );
+      .withFiles({
+        'package.json': JSON.stringify(
+          {
+            workspaces: ['packages/*'],
+            devDependencies: { prettier: '^3.0.0' },
+          },
+          null,
+          2,
+        ),
       })
       .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
-    const workflow = readFileSync(
-      join(result.cwd, '.github/workflows/release-please.yml'),
-      'utf8',
+    result.assertFileContent(
+      '.github/workflows/release-please.yml',
+      'config-file: release-please-config.json',
     );
-    expect(workflow).toContain('config-file: release-please-config.json');
-    expect(workflow).toContain('manifest-file: .release-please-manifest.json');
+    result.assertFileContent(
+      '.github/workflows/release-please.yml',
+      'manifest-file: .release-please-manifest.json',
+    );
   });
 
   it('includes workspace-aware publish command when workspaces exists', async () => {
-    const result = await helpers
+    await helpers
       .run(KickstartGenerator)
-      .inTmpDir((dir) => {
-        writeFileSync(
-          join(dir, 'package.json'),
-          JSON.stringify(
-            {
-              workspaces: ['packages/*'],
-              devDependencies: {},
-            },
-            null,
-            2,
-          ),
-        );
+      .withFiles({
+        'package.json': JSON.stringify(
+          {
+            workspaces: ['packages/*'],
+            devDependencies: {},
+          },
+          null,
+          2,
+        ),
       })
       .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
-    const workflow = readFileSync(
-      join(result.cwd, '.github/workflows/release-please.yml'),
-      'utf8',
-    );
-    expect(workflow).toContain(
+    result.assertFileContent(
+      '.github/workflows/release-please.yml',
       '--workspace=${{ join(fromJson(needs.release-please.outputs.paths_released)',
     );
   });
 
   it('omits release-please config and uses simple publish when workspaces is missing', async () => {
-    const result = await helpers
+    await helpers
       .run(KickstartGenerator)
-      .inTmpDir((dir) => {
-        writeFileSync(
-          join(dir, 'package.json'),
-          JSON.stringify(
-            {
-              devDependencies: { prettier: '^3.0.0' },
-            },
-            null,
-            2,
-          ),
-        );
+      .withFiles({
+        'package.json': JSON.stringify(
+          { devDependencies: { prettier: '^3.0.0' } },
+          null,
+          2,
+        ),
       })
       .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
-    const workflow = readFileSync(
-      join(result.cwd, '.github/workflows/release-please.yml'),
-      'utf8',
+    result.assertNoFileContent(
+      '.github/workflows/release-please.yml',
+      'config-file:',
     );
-    expect(workflow).not.toContain('config-file:');
-    expect(workflow).not.toContain('manifest-file:');
-    expect(workflow).toContain('npm publish --provenance --access public');
-    expect(workflow).not.toContain('--workspace=');
+    result.assertNoFileContent(
+      '.github/workflows/release-please.yml',
+      'manifest-file:',
+    );
+    result.assertFileContent(
+      '.github/workflows/release-please.yml',
+      'npm publish --provenance --access public',
+    );
+    result.assertNoFileContent(
+      '.github/workflows/release-please.yml',
+      '--workspace=',
+    );
   });
 });
