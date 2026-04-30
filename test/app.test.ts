@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { result, createHelpers } from 'yeoman-test';
-import KickstartGenerator from '../generators/app/index.ts';
 
 const helpers = createHelpers({
   environmentOptions: { dryRun: true },
+  defaultGenerator: import.meta.resolve('../generators/app/index.ts'),
 });
 
 const MARKDOWN = [
@@ -18,7 +18,7 @@ const MARKDOWN = [
   '```',
 ].join('\n');
 
-describe('KickstartGenerator', () => {
+describe('ParseGenerator', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -33,7 +33,7 @@ describe('KickstartGenerator', () => {
     );
 
     await helpers
-      .run(KickstartGenerator)
+      .runDefault()
       .withArguments(['https://example.com/template.md'])
       .withAnswers({ confirmed: true });
 
@@ -53,7 +53,7 @@ describe('KickstartGenerator', () => {
     );
 
     await helpers
-      .run(KickstartGenerator)
+      .runDefault()
       .withArguments(['github:example/repo'])
       .withAnswers({ confirmed: true });
 
@@ -65,7 +65,7 @@ describe('KickstartGenerator', () => {
   });
 
   it('writes files from the built-in example template', async () => {
-    await helpers.run(KickstartGenerator).withArguments(['example']);
+    await helpers.runDefault().withArguments(['example']);
 
     result.assertFile('package.json');
     result.assertFile('src/index.js');
@@ -74,7 +74,7 @@ describe('KickstartGenerator', () => {
 
   it('includes prettify-pr job in release-please-action template when prettier exists in devDependencies', async () => {
     await helpers
-      .run(KickstartGenerator)
+      .runDefault()
       .withFiles({
         'package.json': JSON.stringify(
           { devDependencies: { prettier: '^3.0.0' } },
@@ -93,7 +93,7 @@ describe('KickstartGenerator', () => {
 
   it('omits prettify-pr job in release-please-action template when prettier is missing', async () => {
     await helpers
-      .run(KickstartGenerator)
+      .runDefault()
       .withFiles({
         'package.json': JSON.stringify({ devDependencies: {} }, null, 2),
       })
@@ -118,7 +118,7 @@ describe('KickstartGenerator', () => {
 
     await expect(
       helpers
-        .run(KickstartGenerator)
+        .runDefault()
         .withArguments(['https://example.com/missing.md'])
         .withAnswers({ confirmed: true }),
     ).rejects.toThrow('Failed to fetch template: 404 Not Found');
@@ -127,7 +127,7 @@ describe('KickstartGenerator', () => {
   it('throws when the user declines the fetch confirmation', async () => {
     await expect(
       helpers
-        .run(KickstartGenerator)
+        .runDefault()
         .withArguments(['https://example.com/template.md'])
         .withAnswers({ confirmed: false }),
     ).rejects.toThrow('Template fetch cancelled by user.');
@@ -144,7 +144,7 @@ describe('KickstartGenerator', () => {
 
     await expect(
       helpers
-        .run(KickstartGenerator)
+        .runDefault()
         .withArguments(['https://example.com/empty.md'])
         .withAnswers({ confirmed: true }),
     ).rejects.toThrow('No Liquid code blocks found in the markdown file.');
@@ -152,7 +152,7 @@ describe('KickstartGenerator', () => {
 
   it('includes release-please config when workspaces exists', async () => {
     await helpers
-      .run(KickstartGenerator)
+      .runDefault()
       .withFiles({
         'package.json': JSON.stringify(
           {
@@ -178,7 +178,7 @@ describe('KickstartGenerator', () => {
 
   it('includes workspace-aware publish command when workspaces exists', async () => {
     await helpers
-      .run(KickstartGenerator)
+      .runDefault()
       .withFiles({
         'package.json': JSON.stringify(
           {
@@ -200,7 +200,7 @@ describe('KickstartGenerator', () => {
 
   it('omits release-please config and uses simple publish when workspaces is missing', async () => {
     await helpers
-      .run(KickstartGenerator)
+      .runDefault()
       .withFiles({
         'package.json': JSON.stringify(
           { devDependencies: { prettier: '^3.0.0' } },

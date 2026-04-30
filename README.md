@@ -5,7 +5,7 @@ A [Yeoman](https://yeoman.io) generator that bootstraps a project from a markdow
 ## Usage
 
 ```sh
-npx yo kickstart [source]
+npx yo parse [source]
 ```
 
 `source` can be:
@@ -81,19 +81,19 @@ Built-in templates live in `generators/app/templates/`. Pass the filename (with 
 
 ```sh
 # From a public URL
-yo kickstart https://raw.githubusercontent.com/mshima/generator-parse/main/generators/app/templates/example.md
+yo parse https://raw.githubusercontent.com/mshima/generator-parse/main/generators/app/templates/example.md
 
 # From a GitHub repo (README.md)
-yo kickstart github:mshima/generator-parse
+yo parse github:mshima/generator-parse
 
 # From a specific file in a GitHub repo
-yo kickstart github:mshima/generator-parse/generators/app/templates/example.md
+yo parse github:mshima/generator-parse/generators/app/templates/example.md
 
 # Using a built-in template
-yo kickstart example
+yo parse example
 
 # Using the release workflow template
-yo kickstart release-please-action
+yo parse release-please-action
 ```
 
 ## Development
