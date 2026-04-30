@@ -27,11 +27,9 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
-{% if packageJson.workspaces -%}
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-{% endif -%}
 {% if packageJson.devDependencies and packageJson.devDependencies.prettier -%}
 
   prettify-pr:

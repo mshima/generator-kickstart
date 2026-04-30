@@ -211,14 +211,6 @@ describe('ParseGenerator', () => {
       .withArguments(['release-please-action']);
 
     result.assertFile('.github/workflows/release-please.yml');
-    result.assertNoFileContent(
-      '.github/workflows/release-please.yml',
-      'config-file:',
-    );
-    result.assertNoFileContent(
-      '.github/workflows/release-please.yml',
-      'manifest-file:',
-    );
     result.assertFileContent(
       '.github/workflows/release-please.yml',
       'npm publish --provenance --access public',
