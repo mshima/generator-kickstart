@@ -156,7 +156,7 @@ describe('ParseGenerator', () => {
       .withFiles({
         'package.json': JSON.stringify(
           {
-            workspaces: ['packages/*'],
+            workspaces: ['packages/a', 'packages/b'],
             devDependencies: { prettier: '^3.0.0' },
           },
           null,
@@ -174,6 +174,8 @@ describe('ParseGenerator', () => {
       '.github/workflows/release-please.yml',
       'manifest-file: .release-please-manifest.json',
     );
+    result.assertFileContent('release-please-config.json', '"packages/a": {}');
+    result.assertFileContent('release-please-config.json', '"packages/b": {}');
   });
 
   it('includes workspace-aware publish command when workspaces exists', async () => {
