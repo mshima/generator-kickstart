@@ -1,8 +1,6 @@
 import Generator from 'yeoman-generator';
 import type { BaseFeatures, BaseOptions } from 'yeoman-generator';
 import { Liquid } from 'liquidjs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import {
   parseMarkdownBlocks,
   isRemoteSource,
@@ -13,11 +11,6 @@ import {
 
 export { type CodeBlock, parseMarkdownBlocks } from './utils.ts';
 
-const TEMPLATES_DIR = join(
-  dirname(fileURLToPath(import.meta.url)),
-  'templates',
-);
-
 const liquid = new Liquid({
   strictVariables: false,
   strictFilters: false,
@@ -26,26 +19,20 @@ const liquid = new Liquid({
   greedy: false,
 });
 
-type KickstartOptions = BaseOptions & {
+type ParseOptions = BaseOptions & {
   url?: string;
 };
 
-export default class KickstartGenerator extends Generator<
+export default class ParseGenerator extends Generator<
   Record<string, unknown>,
-  KickstartOptions
+  ParseOptions
 > {
   private templateInput = '';
   private remoteUrl = '';
 
-  constructor(
-    args: string[] = [],
-    opts: KickstartOptions = {} as KickstartOptions,
-    features: BaseFeatures = {} as BaseFeatures,
-  ) {
-    super(args, opts, {
-      ...features,
-      customInstallTask: 'ask',
-    } as BaseFeatures);
+  constructor(args?: string[], opts?: ParseOptions, features?: BaseFeatures) {
+    super(args, opts, { ...features, customInstallTask: 'ask' });
+
     this.argument('url', {
       type: String,
       required: false,
@@ -64,7 +51,8 @@ export default class KickstartGenerator extends Generator<
           name: 'url',
           message:
             'Enter the template source (URL, "github:user/repo", or template name):',
-          validate: (input: string) => validateSource(input, TEMPLATES_DIR),
+          validate: (input: string) =>
+            validateSource(input, this.templatePath()),
         },
       ]);
 
@@ -104,7 +92,7 @@ export default class KickstartGenerator extends Generator<
       markdown = await response.text();
     } else {
       this.log(`Loading template from: ${this.templateInput}`);
-      markdown = resolveLocalTemplate(this.templateInput, TEMPLATES_DIR);
+      markdown = resolveLocalTemplate(this.templateInput, this.templatePath());
     }
 
     const blocks = parseMarkdownBlocks(markdown);
