@@ -2,7 +2,7 @@
 
 A minimal built-in template for trying out generator-parse.
 
-```liquid package.json
+```json liquid package.json
 {
   "name": "my-project",
   "version": "1.0.0",
@@ -13,10 +13,10 @@ A minimal built-in template for trying out generator-parse.
 }
 ```
 
-```liquid src/index.js
+```javascript liquid src/index.js
 console.log('Hello from generator-parse!');
 ```
 
-```liquid README.md
+```md liquid README.md
 # My Project
 ```

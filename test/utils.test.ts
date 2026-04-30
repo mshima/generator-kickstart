@@ -183,12 +183,12 @@ describe('toFetchUrl', () => {
 describe('resolveLocalTemplate', () => {
   it('reads a local template file by name (without extension)', () => {
     const content = resolveLocalTemplate('example', TEMPLATE_DIR);
-    expect(content).toContain('```liquid');
+    expect(content).toContain('```json liquid');
   });
 
   it('reads a local template file by name (with .md extension)', () => {
     const content = resolveLocalTemplate('example.md', TEMPLATE_DIR);
-    expect(content).toContain('```liquid');
+    expect(content).toContain('```json liquid');
   });
 
   it('throws when the local template is not found', () => {
