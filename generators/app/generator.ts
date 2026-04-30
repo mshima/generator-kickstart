@@ -23,6 +23,7 @@ const liquid = new Liquid({
   strictFilters: false,
   outputDelimiterLeft: '{{{',
   outputDelimiterRight: '}}}',
+  greedy: false,
 });
 
 type KickstartOptions = BaseOptions & {
