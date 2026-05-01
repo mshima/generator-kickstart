@@ -51,8 +51,11 @@ export function sanitizeBlockFilename(filename: string): void {
   }
 }
 
+const SUPPORTED_TEMPLATE_TYPES = ['liquid'] as const;
+
 export interface CodeBlock {
   filename: string;
+  type: (typeof SUPPORTED_TEMPLATE_TYPES)[number];
   content: string;
 }
 
@@ -67,15 +70,18 @@ export interface CodeBlock {
  */
 export function parseMarkdownBlocks(markdown: string): CodeBlock[] {
   const blocks: CodeBlock[] = [];
-  const regex =
-    /^```(\S+ )?liquid[ \t]+(?<filename>\S+)[ \t]*\n(?<content>[\s\S]*?)^```[ \t]*$/gm;
+  const regex = new RegExp(
+    String.raw`^\`\`\`(?<codeType>\S+ )?(?<type>${SUPPORTED_TEMPLATE_TYPES.join('|')})[ \t]+(?<filename>\S+)[ \t]*\n(?<content>[\s\S]*?)^\`\`\`[ \t]*$`,
+    'gm',
+  );
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(markdown)) !== null) {
-    const { filename, content } = match.groups ?? {};
+    const { type, filename, content } = match.groups ?? {};
     sanitizeBlockFilename(filename);
     blocks.push({
       filename,
+      type: type as CodeBlock['type'],
       content,
     });
   }

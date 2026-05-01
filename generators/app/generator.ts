@@ -103,6 +103,12 @@ export default class ParseGenerator extends Generator<
 
     const packageJson = this.packageJson.createProxy();
     for (const block of blocks) {
+      if (block.type !== 'liquid') {
+        this.log.error(
+          `Skipping unsupported block type "${block.type}" in file "${block.filename}".`,
+        );
+        continue;
+      }
       const rendered = await liquid.parseAndRender(block.content, {
         packageJson,
       });
