@@ -96,6 +96,10 @@ jobs:
   "packages": {
 {% if not packageJson.workspaces or packageJson.workspaces == empty -%}
     ".": {}
+{% else -%}
+  {% for workspace in packageJson.workspaces -%}
+    "{{{ workspace }}}": {}
+  {% endfor %}
 {% endif -%}
   }
 }
