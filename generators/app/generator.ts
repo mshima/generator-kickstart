@@ -82,7 +82,7 @@ export default class ParseGenerator extends Generator<
     let markdown: string;
 
     if (this.remoteUrl) {
-      this.log(`Fetching template from: ${this.remoteUrl}`);
+      this.log.info(`Fetching template from: ${this.remoteUrl}`);
       const response = await fetch(this.remoteUrl);
       if (!response.ok) {
         throw new Error(
@@ -91,7 +91,7 @@ export default class ParseGenerator extends Generator<
       }
       markdown = await response.text();
     } else {
-      this.log(`Loading template from: ${this.templateInput}`);
+      this.log.info(`Loading template from: ${this.templateInput}`);
       markdown = resolveLocalTemplate(this.templateInput, this.templatePath());
     }
 
@@ -106,8 +106,12 @@ export default class ParseGenerator extends Generator<
       const rendered = await liquid.parseAndRender(block.content, {
         packageJson,
       });
-      this.writeDestination(block.filename, rendered);
-      this.log(`Writing: ${block.filename}`);
+      if (block.filename === 'package.json') {
+        this.packageJson.merge(JSON.parse(rendered));
+      } else {
+        this.writeDestination(block.filename, rendered);
+      }
+      this.log.info(`Writing: ${block.filename}`);
     }
   }
 }

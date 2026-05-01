@@ -16,6 +16,14 @@ const MARKDOWN = [
   '```liquid README.md',
   '# Project',
   '```',
+  '',
+  '```liquid package.json',
+  '{ "name": "my-project" }',
+  '```',
+  '',
+  '```liquid package.json',
+  '{ "dpendencies": { "foo": "latest" } }',
+  '```',
 ].join('\n');
 
 describe('ParseGenerator', () => {
@@ -41,6 +49,26 @@ describe('ParseGenerator', () => {
     result.assertFileContent('src/index.ts', "export const hello = 'world';");
     result.assertFile('README.md');
     result.assertFileContent('README.md', '# Project');
+  });
+
+  it('merges package.json contents', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => MARKDOWN,
+      }),
+    );
+
+    await helpers
+      .runDefault()
+      .withArguments(['https://example.com/template.md'])
+      .withAnswers({ confirmed: true });
+
+    result.assertJsonFileContent('package.json', {
+      name: 'my-project',
+      dpendencies: { foo: 'latest' },
+    });
   });
 
   it('writes files when a github: shorthand is provided', async () => {
