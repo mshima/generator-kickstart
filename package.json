@@ -5,6 +5,10 @@
   "keywords": [
     "yeoman-generator"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mshima/generator-parse.git"
+  },
   "license": "Apache-2.0",
   "type": "module",
   "exports": "./generators/app/index.ts",
