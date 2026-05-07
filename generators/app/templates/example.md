@@ -11,16 +11,16 @@ A minimal built-in template for trying out generator-parse.
     "start": "node src/index.js"
   }
 }
-{% # package.json %}
+{% # package.json -%}
 ```
 
 ```javascript liquid src/index.js
 console.log('Hello from generator-parse!');
-{% # src/index.js %}
+{% # src/index.js -%}
 ```
 
 ```md liquid README.md
 # My Project
 
-{% # README.md %}
+{% # README.md -%}
 ```

@@ -1,4 +1,4 @@
-import { describe, it, vi, afterEach } from 'vitest';
+import { describe, it, vi, afterEach, expect } from 'vitest';
 import { result, createHelpers } from 'yeoman-test';
 
 const helpers = createHelpers({
@@ -43,6 +43,24 @@ describe('ParseGenerator', () => {
       '.github/workflows/release-please.yml',
       'prettify-pr:',
     );
+  });
+
+  it('matches snapshot when workspaces exist', async () => {
+    await helpers
+      .runDefault()
+      .withFiles({
+        'package.json': JSON.stringify(
+          {
+            workspaces: ['packages/a', 'packages/b'],
+            devDependencies: { prettier: '^3.0.0' },
+          },
+          null,
+          2,
+        ),
+      })
+      .withArguments(['release-please-action']);
+
+    expect(result.getSnapshot()).toMatchSnapshot();
   });
 
   it('includes release-please config when workspaces exists', async () => {
