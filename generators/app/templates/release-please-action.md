@@ -72,7 +72,6 @@ jobs:
           node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
       - run: npm install
-      - run: npm test
       - name: Publish with provenance
 {% if packageJson.workspaces -%}
         run: npm publish --workspace=${{ join(fromJson(needs.release-please.outputs.paths_released), ' --workspace=') }} --provenance --access public
