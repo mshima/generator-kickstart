@@ -3,7 +3,6 @@
 Summary: creates a release workflow with `release-please` and npm publishing; the `prettify-pr` job is only included when `packageJson.devDependencies.prettier` exists in the generated project.
 
 ```yaml liquid .github/workflows/release-please.yml
-{% # release-please.yml %}
 name: Release Please
 
 on:
@@ -79,17 +78,17 @@ jobs:
 {% else -%}
         run: npm publish --provenance --access public
 {% endif -%}
+{% # release-please.yml %}
 ```
 
 ```json liquid .release-please-manifest.json
-{% # release-please-manifest.json %}
 {
   ".": "{{{ packageJson.version }}}"
 }
+{% # release-please-manifest.json %}
 ```
 
 ```json liquid release-please-config.json
-{% # release-please-config.json %}
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "release-type": "node",
@@ -106,4 +105,5 @@ jobs:
 {% endif -%}
   }
 }
+{% # release-please-config.json %}
 ```
