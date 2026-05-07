@@ -72,19 +72,21 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm install
       - name: Publish with provenance
-{% if packageJson.workspaces -%}
-        run: npm publish --workspace=${{ join(fromJson(needs.release-please.outputs.paths_released), ' --workspace=') }} --provenance --access public
-{% else -%}
-        run: npm publish --provenance --access public
-{% endif -%}
-{% # release-please.yml %}
+        run: npm publish --provenance --access public{% if packageJson.workspaces %} --workspace=${{ join(fromJson(needs.release-please.outputs.paths_released), ' --workspace=') }}{% endif %}
+{% # release-please.yml -%}
 ```
 
 ```json liquid .release-please-manifest.json
 {
+{% if not packageJson.workspaces or packageJson.workspaces == empty -%}
   ".": "{{{ packageJson.version }}}"
+{% else -%}
+  {%- for workspace in packageJson.workspaces -%}
+  "{{{ workspace }}}": ""
+  {%- endfor -%}
+{% endif -%}
 }
-{% # release-please-manifest.json %}
+{% # release-please-manifest.json -%}
 ```
 
 ```json liquid release-please-config.json
@@ -98,11 +100,11 @@ jobs:
 {% if not packageJson.workspaces or packageJson.workspaces == empty -%}
     ".": {}
 {% else -%}
-  {% for workspace in packageJson.workspaces -%}
+  {%- for workspace in packageJson.workspaces -%}
     "{{{ workspace }}}": {}
-  {% endfor %}
+  {%- endfor -%}
 {% endif -%}
   }
 }
-{% # release-please-config.json %}
+{% # release-please-config.json -%}
 ```
